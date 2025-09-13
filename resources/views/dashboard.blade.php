@@ -1,18 +1,21 @@
-<x-layouts.app :title="__('Dashboard')">
-    <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-            </div>
-        </div>
-        <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <x-placeholder-pattern class="absolute inset-0 size-full stroke-gray-900/20 dark:stroke-neutral-100/20" />
-        </div>
+@php
+    $user = auth()->user();
+    if ($user->hasRole('super-admin') || $user->hasRole('admin')) {
+        $redirectRoute = 'admin.dashboard';
+    } elseif ($user->hasRole('trainer')) {
+        $redirectRoute = 'trainer.dashboard';
+    } else {
+        $redirectRoute = 'student.dashboard';
+    }
+@endphp
+
+<script>
+    window.location.href = "{{ route($redirectRoute) }}";
+</script>
+
+<div class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+        <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
+        <p class="mt-4 text-gray-600 dark:text-gray-400">Redirecting to your dashboard...</p>
     </div>
-</x-layouts.app>
+</div>

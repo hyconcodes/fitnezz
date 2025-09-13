@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Rules\BouestiEmail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $role = 'student';
 
     /**
      * Handle an incoming registration request.
@@ -21,13 +23,24 @@ new #[Layout('components.layouts.auth')] class extends Component {
     {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class, new BouestiEmail($this->role)],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'string', 'in:student'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['role'] = 'student';
+
+        // Extract matric number from student email
+        if ($validated['role'] === 'student') {
+            preg_match('/^[a-z]+\.([0-9]+)@bouesti\.edu\.ng$/i', $validated['email'], $matches);
+            $validated['matric_no'] = $matches[1] ?? null;
+        }
 
         event(new Registered(($user = User::create($validated))));
+
+        // Assign student role
+        $user->assignRole('student');
 
         Auth::login($user);
 
@@ -36,7 +49,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 }; ?>
 
 <div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
+    <x-auth-header :title="__('Create an account')" :description="__('Enter your BOUESTI student details below to create your account')" />
 
     <!-- Session Status -->
     <x-auth-session-status class="text-center" :status="session('status')" />
@@ -56,12 +69,16 @@ new #[Layout('components.layouts.auth')] class extends Component {
         <!-- Email Address -->
         <flux:input
             wire:model="email"
-            :label="__('Email address')"
+            :label="__('BOUESTI Email address')"
             type="email"
             required
             autocomplete="email"
-            placeholder="email@example.com"
+            placeholder="firstname.matricno@bouesti.edu.ng"
         />
+        <flux:callout variant="info">
+            <flux:icon name="information-circle" />
+            <flux:text>Use your BOUESTI student email in the format: firstname.matricno@bouesti.edu.ng</flux:text>
+        </flux:callout>
 
         <!-- Password -->
         <flux:input

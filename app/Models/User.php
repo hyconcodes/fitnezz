@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +22,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'matric_no',
+        'role',
         'password',
     ];
 
@@ -57,5 +60,37 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * Get the user's membership
+     */
+    public function membership()
+    {
+        return $this->hasOne(Membership::class);
+    }
+
+    /**
+     * Get the user's payments
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get classes taught by this user (if trainer)
+     */
+    public function taughtClasses()
+    {
+        return $this->hasMany(ClassModel::class, 'trainer_id');
+    }
+
+    /**
+     * Get classes booked by this user (if student)
+     */
+    public function bookedClasses()
+    {
+        return $this->belongsToMany(ClassModel::class, 'class_bookings');
     }
 }
