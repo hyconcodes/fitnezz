@@ -26,6 +26,7 @@ class User extends Authenticatable
         'matric_no',
     ];
 
+
     /**
      * The attributes that should be hidden for serialization.
      *

@@ -59,16 +59,15 @@
 
                 // Role Distribution Chart
                 const roleCtx = document.getElementById('roleChart').getContext('2d');
-                const doctorCount = {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'doctor')->count() }};
-                const nurseCount = {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'nurse')->count() }};
-                const patientCount = {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'patient')->count() }};
+                const trainerCount = {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'trainer')->count() }};
+                const studentCount = {{ DB::table('model_has_roles')->join('roles', 'roles.id', '=', 'model_has_roles.role_id')->where('roles.name', 'student')->count() }};
                 
                 new Chart(roleCtx, {
                     type: 'pie',
                     data: {
-                        labels: ['Doctors', 'Nurses', 'Patients'],
+                        labels: ['Trainers', 'Students'],
                         datasets: [{
-                            data: [doctorCount, nurseCount, patientCount],
+                            data: [trainerCount, studentCount],
                             backgroundColor: [
                                 'rgba(54, 162, 235, 0.8)',
                                 'rgba(255, 99, 132, 0.8)',
@@ -89,9 +88,9 @@
             });
         </script>
 
-        <!-- Patient Management Table -->
+        <!-- student Management Table -->
         <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-            <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Recent Patients</h3>
+            <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Recent Students</h3>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
                     <thead>
@@ -102,11 +101,11 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
-                        @foreach (App\Models\User::role('patient')->latest()->take(5)->get() as $patient)
+                        @foreach (App\Models\User::role('student')->latest()->take(5)->get() as $student)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-100">{{ $patient->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-100">{{ $patient->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-100">{{ $patient->created_at->format('M d, Y') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-100">{{ $student->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-100">{{ $student->email }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-neutral-100">{{ $student->created_at->format('M d, Y') }}</td>
                         </tr>
                         @endforeach
                     </tbody>

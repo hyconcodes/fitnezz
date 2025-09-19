@@ -19,12 +19,12 @@
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 @endrole
-                @role(['patient'])
-                <flux:navlist.item icon="home" :href="route('patient.dashboard')" :current="request()->routeIs('patient.dashboard')"
+                @role(['student'])
+                <flux:navlist.item icon="home" :href="route('student.dashboard')" :current="request()->routeIs('student.dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 @endrole
-                @role(['doctor', 'nurse'])
-                <flux:navlist.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')"
+                @role(['trainer'])
+                <flux:navlist.item icon="home" :href="route('trainer.dashboard')" :current="request()->routeIs('trainer.dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 @endrole
                 @can(['view.roles', 'create.roles', 'edit.roles', 'delete.roles', 'assign.permissions'])
@@ -37,9 +37,14 @@
                         :current="request()->routeIs('staff.sys')" wire:navigate>{{ __('Manage Admin') }}
                     </flux:navlist.item>
                 @endcan
-                @can(['view.medical.records'])
-                    <flux:navlist.item icon="user" :href="route('admin.patients')"
-                        :current="request()->routeIs('admin.patients')" wire:navigate>{{ __('Manage Patients') }}
+                @can(['view.students'])
+                    <flux:navlist.item icon="user" :href="route('admin.students')"
+                        :current="request()->routeIs('admin.students')" wire:navigate>{{ __('Manage Students') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['view.trainers'])
+                    <flux:navlist.item icon="user-group" :href="route('admin.trainers')"
+                        :current="request()->routeIs('admin.trainers')" wire:navigate>{{ __('Manage Trainers') }}
                     </flux:navlist.item>
                 @endcan
             </flux:navlist.group>

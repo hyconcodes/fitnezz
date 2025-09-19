@@ -43,14 +43,14 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         $user = User::create($validated);
         
-        // Assign patient role to newly registered user
-        $user->assignRole('patient');
+        // Assign student role to newly registered user
+        $user->assignRole('student');
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        $this->redirectIntended(route('patient.dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(route('student.dashboard', absolute: false), navigate: true);
     }
 }; ?>
 

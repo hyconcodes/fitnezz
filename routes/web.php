@@ -26,18 +26,34 @@ Route::middleware(['auth'])->group(function () {
         Volt::route('/staffs-management-sys', 'admin.staffs')
             ->name('staff.sys');
     });
-    Route::middleware(['role:patient'])->group(function () {
-        Volt::route('/patient-dashboard', 'patients.dashboard')
-            ->name('patient.dashboard');
-        });
-        Volt::route('/patient-management-board', 'admin.patients')
-        ->middleware(['permission:view.patients|create.patients|edit.patients|delete.patients|view.medical.records'])
-        ->name('admin.patients');
-        Volt::route('/medical-records-board', 'admin.medical-records')
-        ->middleware(['permission:view.medical.records|create.medical.records|edit.medical.records|delete.medical.records'])
-        ->name('admin.medical-records');
-        Volt::route('/admin-dashboard', 'admin.dashboard')
+    // Student routes
+    Route::middleware(['role:student'])->group(function () {
+        Volt::route('/student-dashboard', 'students.dashboard')
+            ->name('student.dashboard');
+    });
+
+    // Trainer routes
+    Route::middleware(['role:trainer'])->group(function () {
+        Volt::route('/trainer-dashboard', 'trainers.dashboard')
+            ->name('trainer.dashboard');
+    });
+
+    // Admin routes
+    Route::prefix('admin')->group(function () {
+        // Students management
+        Volt::route('/students', 'admin.students')
+            ->middleware(['permission:view.students|create.students|edit.students|delete.students'])
+            ->name('admin.students');
+            
+        // Trainers management
+        Volt::route('/trainers', 'admin.trainers')
+            ->middleware(['permission:view.trainers|create.trainers|edit.trainers|delete.trainers'])
+            ->name('admin.trainers');
+            
+        // Admin dashboard
+        Volt::route('/dashboard', 'admin.dashboard')
             ->name('admin.dashboard');
+    });
 });
 
 require __DIR__ . '/auth.php';

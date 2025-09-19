@@ -14,21 +14,29 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         // Role management permissions
-        // $rolePermissions = [
-        //     'view.roles',
-        //     'create.roles',
-        //     'edit.roles',
-        //     'delete.roles',
-        //     'assign.permissions',
-        // ];
+        $rolePermissions = [
+            'view.roles',
+            'create.roles',
+            'edit.roles',
+            'delete.roles',
+            'assign.permissions',
+        ];
 
-        // Patient management permissions
-        // $patientPermissions = [
-        //     'view.patients',
-        //     'create.patients',
-        //     'edit.patients',
-        //     'delete.patients',
-        // ];
+        // Student management permissions
+        $studentPermissions = [
+            'view.students',
+            'create.students',
+            'edit.students',
+            'delete.students',
+        ];
+
+        // Trainer management permissions
+        $trainerPermissions = [
+            'view.trainers',
+            'create.trainers',
+            'edit.trainers',
+            'delete.trainers',
+        ];
 
         // User management permissions
         // $userPermissions = [
@@ -54,12 +62,12 @@ class PermissionSeeder extends Seeder
         //     $medicalRecordPermissions
         // );
 
-        $permissions = [
-            'view.staff',
-            'create.staff',
-            'edit.staff',
-            'delete.staff',
-        ];
+        // Combine all permissions
+        $permissions = array_merge(
+            $studentPermissions,
+            $trainerPermissions,
+            $rolePermissions
+        );
         // Create permissions in the database
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
