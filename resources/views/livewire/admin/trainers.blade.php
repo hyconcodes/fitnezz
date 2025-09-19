@@ -11,7 +11,7 @@ new class extends Component {
     public $name;
     public $email;
     public $password;
-    public $role = 'doctor'; // Default role
+    public $role = 'trainer'; // Default role
     public $editMode = false;
     public $userId;
     public $showModal = false;
@@ -20,7 +20,7 @@ new class extends Component {
         'name' => 'required|min:3|max:100',
         'email' => ['required', 'email', 'unique:users,email', 'regex:/^[a-zA-Z0-9._%+-]+@bouesti\.edu\.ng$/'],
         'password' => 'required|min:8',
-        'role' => 'required|in:doctor,nurse'
+        'role' => 'required|in:trainer'
     ];
 
     protected $messages = [
@@ -38,13 +38,13 @@ new class extends Component {
 
     public function loadUsers() {
         $this->users = User::whereHas('roles', function($query) {
-            $query->whereIn('name', ['doctor', 'nurse']);
+            $query->whereIn('name', ['trainer']);
         })->latest()->get();
     }
 
     public function create() {
-        if(!auth()->user()->can('create.staff')) {
-            session()->flash('error', '🚫 You don\'t have permission for this action.');
+        if(!auth()->user()->can('create.trainers')) {
+            session()->flash('error', '🚫 You don\'t have permission to manage trainers.');
             return;
         }
 
@@ -63,14 +63,14 @@ new class extends Component {
 
             $this->reset(['name', 'email', 'password', 'showModal']);
             $this->loadUsers();
-            session()->flash('message', '🎉 New ' . ucfirst($this->role) . ' added successfully!');
+            session()->flash('message', '🎉 New trainer added successfully!');
         } catch (\Exception $e) {
             session()->flash('error', '😕 Something went wrong: ' . $e->getMessage());
         }
     }
 
     public function edit($id) {
-        if(!auth()->user()->can('edit.staff')) {
+        if(!auth()->user()->can('edit.trainers')) {
             session()->flash('error', '🚫 You don\'t have edit permissions.');
             return;
         }
@@ -90,7 +90,7 @@ new class extends Component {
     }
 
     public function update() {
-        if(!auth()->user()->can('edit.staff')) {
+        if(!auth()->user()->can('edit.trainers')) {
             session()->flash('error', '🚫 You can\'t modify this record.');
             return;
         }
@@ -103,7 +103,7 @@ new class extends Component {
                 'unique:users,email,' . $this->userId,
                 'regex:/^[a-zA-Z0-9._%+-]+@bouesti\.edu\.ng$/'
             ],
-            'role' => 'required|in:doctor,nurse'
+            'role' => 'required|in:trainer'
         ]);
 
         try {
@@ -124,14 +124,14 @@ new class extends Component {
 
             $this->reset(['name', 'email', 'password', 'editMode', 'userId', 'showModal']);
             $this->loadUsers();
-            session()->flash('message', '✨ Staff info updated successfully!');
+            session()->flash('message', '✨ Trainer info updated successfully!');
         } catch (\Exception $e) {
             session()->flash('error', '😬 Update failed: ' . $e->getMessage());
         }
     }
 
     public function delete($id) {
-        if(!auth()->user()->can('delete.staff')) {
+        if(!auth()->user()->can('delete.trainers')) {
             session()->flash('error', '🚫 You can\'t delete records.');
             return;
         }
@@ -139,7 +139,7 @@ new class extends Component {
         try {
             User::findOrFail($id)->delete();
             $this->loadUsers();
-            session()->flash('message', '🗑️ Staff record deleted successfully!');
+            session()->flash('message', '🗑️ Trainer record deleted successfully!');
         } catch (\Exception $e) {
             session()->flash('error', '😱 Deletion failed: ' . $e->getMessage());
         }
@@ -154,10 +154,10 @@ new class extends Component {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-semibold text-green-900 dark:text-green-100">Staff Management</h2>
-            @can('create.staff')
+            <h2 class="text-2xl font-semibold text-green-900 dark:text-green-100">Trainer Management</h2>
+            @can('create.trainers')
             <flux:button wire:click="$set('showModal', true)" class="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium !text-white !bg-green-700">
-                Add New Staff
+                Add New Trainer
             </flux:button>
             @endcan
         </div>
@@ -179,32 +179,37 @@ new class extends Component {
         <div class="fixed inset-0 bg-zinc-500 bg-opacity-75 flex items-center justify-center p-4">
             <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
                 <h3 class="text-lg font-medium text-zinc-900 mb-4">
-                    {{ $editMode ? 'Edit Staff' : 'Add New Staff' }}
+                    {{ $editMode ? 'Edit Trainer' : 'Add New Trainer' }}
                 </h3>
                 <form wire:submit.prevent="{{ $editMode ? 'update' : 'create' }}">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-zinc-700">Name</label>
                             <flux:input type="text" wire:model="name" class="mt-1 block w-full rounded-md"/>
-                            @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            @error('name')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-zinc-700">Email</label>
                             <flux:input type="email" wire:model="email" class="mt-1 block w-full rounded-md"/>
-                            @error('email') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            @error('email')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-zinc-700">Password</label>
                             <flux:input type="password" wire:model="password" class="mt-1 block w-full rounded-md"/>
-                            @error('password') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            @error('password')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-zinc-700">Role</label>
-                            <select wire:model="role" class="mt-1 block w-full rounded-md border-zinc-300 shadow-sm">
-                                <option value="doctor">Doctor</option>
-                                <option value="nurse">Nurse</option>
-                            </select>
-                            @error('role') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                            <input type="hidden" wire:model="role" value="trainer">
+                            <div class="block text-sm font-medium text-zinc-700">Role: Trainer</div>
+                            @error('role')
+                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                     <div class="mt-5 flex justify-end space-x-3">
@@ -236,17 +241,19 @@ new class extends Component {
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{{ $user->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{{ $user->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900">{{ ucfirst($user->roles->first()->name) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">
+                            Trainer
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            @can('edit.staff')
+                            @can('edit.trainers')
                             <flux:button wire:click="edit({{ $user->id }})" class="!text-green-600 hover:!text-green-800 mr-3">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </flux:button>
                             @endcan
-                            @can('delete.staff')
-                            <flux:button x-data="" x-on:click.prevent="confirm('Are you sure you want to delete this staff member?') && $wire.delete({{ $user->id }})" class="!text-red-600 hover:!text-red-800">
+                            @can('delete.trainers')
+                            <flux:button x-data="" @click.prevent="if(confirm('Are you sure you want to delete this trainer?')) { $wire.delete({{ $user->id }}) }" class="!text-red-600 hover:!text-red-800">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>

@@ -7,12 +7,12 @@ use Carbon\Carbon;
 use Spatie\Permission\Models\Role;
 
 new class extends Component {
-    public $patients;
+    public $students;
     public $name;
     public $email;
     public $matric_no;
     public $editMode = false;
-    public $patientId;
+    public $studentId;
     public $showModal = false;
     public $dailyRegistrations = [];
     public $labels = [];
@@ -28,7 +28,7 @@ new class extends Component {
     ];
 
     protected $messages = [
-        'name.required' => 'Please enter the patient name! 😊',
+        'name.required' => 'Please enter the student name! 😊',
         'email.required' => 'Email address is required! 📧',
         'email.email' => 'Please enter a valid email address! 📧',
         'selectedRole.required' => 'Please select a role! 👥',
@@ -37,21 +37,21 @@ new class extends Component {
 
     public function mount()
     {
-        $this->loadPatients();
+        $this->loadStudents();
         $this->loadRegistrationStats();
         $this->availableRoles = Role::all()->pluck('name');
     }
 
-    public function loadPatients()
+    public function loadStudents()
     {
-        $this->patients = User::role('patient')->latest()->get();
+        $this->students = User::role('student')->latest()->get();
     }
 
     public function loadRegistrationStats()
     {
         $startDate = now()->subDays(29)->startOfDay();
 
-        $registrations = User::role('patient')->where('created_at', '>=', $startDate)->selectRaw('DATE(created_at) as date, COUNT(*) as count')->groupBy('date')->orderBy('date')->get()->keyBy('date');
+        $registrations = User::role('student')->where('created_at', '>=', $startDate)->selectRaw('DATE(created_at) as date, COUNT(*) as count')->groupBy('date')->orderBy('date')->get()->keyBy('date');
 
         for ($i = 0; $i < 30; $i++) {
             $day = now()
@@ -65,18 +65,18 @@ new class extends Component {
     public function edit($id)
     {
         if (!auth()->user()->hasRole('super-admin')) {
-            session()->flash('error', '🚫 Only super admins can edit patient information.');
+            session()->flash('error', '🚫 Only super admins can edit student information.');
             return;
         }
 
         try {
             $this->editMode = true;
-            $this->patientId = $id;
-            $patient = User::findOrFail($id);
-            $this->name = $patient->name;
-            $this->email = $patient->email;
-            $this->matric_no = $patient->matric_no;
-            $this->selectedRole = $patient->roles->first()->name;
+            $this->studentId = $id;
+            $student = User::findOrFail($id);
+            $this->name = $student->name;
+            $this->email = $student->email;
+            $this->matric_no = $student->matric_no;
+            $this->selectedRole = $student->roles->first()->name;
             $this->showModal = true;
         } catch (\Exception $e) {
             session()->flash('error', '😮 Error while editing: ' . $e->getMessage());
@@ -87,37 +87,37 @@ new class extends Component {
     public function update()
     {
         if (!auth()->user()->hasRole('super-admin')) {
-            session()->flash('error', '🚫 Only super admins can modify patient records.');
+            session()->flash('error', '🚫 Only super admins can modify student records.');
             return;
         }
 
         $this->validate();
 
         try {
-            $patient = User::findOrFail($this->patientId);
+            $student = User::findOrFail($this->studentId);
 
             // Only check matric_no uniqueness if it has been changed
-            if ($this->matric_no !== $patient->matric_no && $this->matric_no) {
-                $existingUser = User::where('matric_no', $this->matric_no)->where('id', '!=', $this->patientId)->first();
+            if ($this->matric_no !== $student->matric_no && $this->matric_no) {
+                $existingUser = User::where('matric_no', $this->matric_no)->where('id', '!=', $this->studentId)->first();
 
                 if ($existingUser) {
-                    session()->flash('error', '🚫 This matric number is already assigned to another patient!');
+                    session()->flash('error', '🚫 This matric number is already assigned to another student!');
                     return;
                 }
             }
 
-            $patient->update([
+            $student->update([
                 'name' => $this->name,
                 'email' => $this->email,
                 'matric_no' => $this->matric_no,
             ]);
 
             // Update role
-            $patient->syncRoles([$this->selectedRole]);
+            $student->syncRoles([$this->selectedRole]);
 
-            $this->reset(['name', 'email', 'matric_no', 'editMode', 'patientId', 'showModal', 'selectedRole']);
-            $this->loadPatients();
-            session()->flash('message', '✨ Patient info and role updated successfully!');
+            $this->reset(['name', 'email', 'matric_no', 'editMode', 'studentId', 'showModal', 'selectedRole']);
+            $this->loadStudents();
+            session()->flash('message', '✨ Student info and role updated successfully!');
         } catch (\Exception $e) {
             session()->flash('error', '😬 Update failed: ' . $e->getMessage());
         }
@@ -126,14 +126,14 @@ new class extends Component {
     public function delete($id)
     {
         if (!auth()->user()->hasRole('super-admin')) {
-            session()->flash('error', '🚫 Only super admins can delete patient records.');
+            session()->flash('error', '🚫 Only super admins can delete student records.');
             return;
         }
 
         try {
             User::findOrFail($id)->delete();
-            $this->loadPatients();
-            session()->flash('message', '🗑️ Patient record deleted successfully!');
+            $this->loadStudents();
+            session()->flash('message', '🗑️ Student record deleted successfully!');
         } catch (\Exception $e) {
             session()->flash('error', '😱 Deletion failed: ' . $e->getMessage());
         }
@@ -141,7 +141,7 @@ new class extends Component {
 
     public function cancelEdit()
     {
-        $this->reset(['name', 'email', 'matric_no', 'editMode', 'patientId', 'showModal', 'selectedRole']);
+        $this->reset(['name', 'email', 'matric_no', 'editMode', 'studentId', 'showModal', 'selectedRole']);
     }
 
     public function with(): array
@@ -157,7 +157,7 @@ new class extends Component {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-semibold text-green-900 dark:text-green-100">Patient Management</h2>
+            <h2 class="text-2xl font-semibold text-green-900 dark:text-green-100">Student Management</h2>
         </div>
 
         <!-- Flash Messages -->
@@ -236,18 +236,18 @@ new class extends Component {
 
         <!-- Registration Chart -->
         <div class="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow mb-6">
-            <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Patient Registrations (Last 30 Days)
+            <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Student Registrations (Last 30 Days)
             </h3>
             <div class="h-64">
                 <canvas id="registrationChart"></canvas>
             </div>
         </div>
 
-        <!-- Patient Modal -->
+        <!-- Student Modal -->
         @if ($showModal)
             <div class="fixed inset-0 bg-zinc-500 dark:bg-zinc-800 bg-opacity-75 flex items-center justify-center p-4">
                 <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-                    <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Edit Patient Information</h3>
+                    <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Edit Student Information</h3>
                     <form wire:submit.prevent="update">
                         <div class="space-y-4">
                             <div>
@@ -326,18 +326,18 @@ new class extends Component {
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
-                    @foreach ($patients as $patient)
+                    @foreach ($students as $student)
                         <tr class="bg-white dark:bg-zinc-800">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-zinc-100">
-                                {{ $patient->name }}</td>
+                                {{ $student->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-zinc-100">
-                                {{ $patient->email }}</td>
+                                {{ $student->email }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-zinc-100">
-                                {{ $patient->matric_no ?? 'N/A' }}</td>
+                                {{ $student->matric_no ?? 'N/A' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-900 dark:text-zinc-100">
-                                {{ $patient->created_at->format('M d, Y') }}</td>
+                                {{ $student->created_at->format('M d, Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="{{ route('admin.medical-records', $patient->id) }}"
+                                <a href="{{ route('admin.view-student', $student->id) }}"
                                     class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-3">
                                     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -346,7 +346,7 @@ new class extends Component {
                                     </svg>
                                 </a>
                                 @role('super-admin')
-                                    <flux:button wire:click="edit({{ $patient->id }})"
+                                    <flux:button wire:click="edit({{ $student->id }})"
                                         class="!text-green-600 dark:!text-green-400 hover:!text-green-800 dark:hover:!text-green-300 mr-3">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -354,7 +354,7 @@ new class extends Component {
                                         </svg>
                                     </flux:button>
                                     <flux:button x-data=""
-                                        x-on:click.prevent="confirm('Are you sure you want to delete this patient?') && $wire.delete({{ $patient->id }})"
+                                        x-on:click.prevent="confirm('Are you sure you want to delete this student?') && $wire.delete({{ $student->id }})"
                                         class="!text-red-600 dark:!text-red-400 hover:!text-red-800 dark:hover:!text-red-300">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

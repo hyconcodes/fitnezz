@@ -15,7 +15,7 @@ class CreateSuperAdmin extends Command
      *
      * @var string
      */
-    protected $signature = 'app:create-super-admin';
+    protected $signature = 'super-admin';
 
     /**
      * The console command description.

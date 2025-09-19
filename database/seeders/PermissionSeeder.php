@@ -38,35 +38,21 @@ class PermissionSeeder extends Seeder
             'delete.trainers',
         ];
 
-        // User management permissions
-        // $userPermissions = [
-        //     'view.users',
-        //     'create.users',
-        //     'edit.users',
-        //     'delete.users',
-        // ];
-
-        // Medical record permissions
-        // $medicalRecordPermissions = [
-        //     'view.medical.records',
-        //     'create.medical.records',
-        //     'edit.medical.records',
-        //     'delete.medical.records',
-        // ];
-
-        // Combine all permissions
-        // $permissions = array_merge(
-        //     $rolePermissions,
-        //     $patientPermissions,
-        //     $userPermissions,
-        //     $medicalRecordPermissions
-        // );
+        // Equipment management permissions
+        $equipmentPermissions = [
+            'view.equipment',
+            'create.equipment',
+            'edit.equipment',
+            'delete.equipment',
+            'maintain.equipment',
+        ];
 
         // Combine all permissions
         $permissions = array_merge(
             $studentPermissions,
             $trainerPermissions,
-            $rolePermissions
+            $rolePermissions,
+            $equipmentPermissions
         );
         // Create permissions in the database
         foreach ($permissions as $permission) {

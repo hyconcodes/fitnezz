@@ -59,10 +59,7 @@
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                    <svg class="h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
+                    <x-app-logo-icon class="h-8 w-8 text-primary-600" />
                     <span
                         class="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">Fitnezz</span>
                 </div>
@@ -79,7 +76,7 @@
                         class="text-gray-700 hover:text-primary-600 transition-colors duration-200">Pricing</a>
 
                     @auth
-                        <a href="{{ url(auth()->user()->hasRole('student') ? '/student/dashboard' : (auth()->user()->hasRole('trainer') ? '/trainer/dashboard' : '/admin/dashboard')) }}"
+                        <a href="{{ url(auth()->user()->hasRole('student') ? '/student-dashboard' : (auth()->user()->hasRole('trainer') ? '/trainer-dashboard' : '/admin/dashboard')) }}"
                             class="px-6 py-2 rounded-full bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors duration-200">
                             Go to Dashboard
                         </a>
@@ -154,7 +151,7 @@
                         Learn More
                     </a>
                 @else
-                    <a href="{{ url(auth()->user()->hasRole('student') ? '/student/dashboard' : (auth()->user()->hasRole('trainer') ? '/trainer/dashboard' : '/admin/dashboard')) }}"
+                    <a href="{{ url(auth()->user()->hasRole('student') ? '/student-dashboard' : (auth()->user()->hasRole('trainer') ? '/trainer/dashboard' : '/admin/dashboard')) }}"
                        class="px-8 py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors duration-200 text-lg">
                         Go to Dashboard
                     </a>
@@ -256,7 +253,7 @@
                         Learn More
                     </a>
                 @else
-                    <a href="{{ url(auth()->user()->hasRole('student') ? '/student/dashboard' : (auth()->user()->hasRole('trainer') ? '/trainer/dashboard' : '/admin/dashboard')) }}" 
+                    <a href="{{ url(auth()->user()->hasRole('student') ? '/student-dashboard' : (auth()->user()->hasRole('trainer') ? '/trainer/dashboard' : '/admin/dashboard')) }}" 
                        class="px-8 py-3 bg-white text-primary-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors duration-200">
                         Go to Dashboard
                     </a>
@@ -271,9 +268,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div class="col-span-1">
                     <div class="flex items-center space-x-2 mb-4">
-                        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
+                        <x-app-logo-icon class="h-8 w-8 text-primary-600" />
                         <span class="text-2xl font-bold text-white">Fitnezz</span>
                     </div>
                     <p class="text-gray-400 text-sm">Your ultimate fitness companion for students and trainers to achieve their fitness goals together.</p>
@@ -307,7 +302,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400 text-sm"> 2023 Fitnezz. All rights reserved.</p>
+                <p class="text-gray-400 text-sm"> {{ date('Y') }} Fitnezz. All rights reserved.</p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
                     <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
                         <span class="sr-only">Facebook</span>

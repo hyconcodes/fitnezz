@@ -32,11 +32,6 @@
                         :current="request()->routeIs('role-management')" wire:navigate>{{ __('Role Management') }}
                     </flux:navlist.item>
                 @endcan
-                @can(['view.staff', 'create.staff', 'edit.staff', 'delete.staff'])
-                    <flux:navlist.item icon="user" :href="route('staff.sys')"
-                        :current="request()->routeIs('staff.sys')" wire:navigate>{{ __('Manage Admin') }}
-                    </flux:navlist.item>
-                @endcan
                 @can(['view.students'])
                     <flux:navlist.item icon="user" :href="route('admin.students')"
                         :current="request()->routeIs('admin.students')" wire:navigate>{{ __('Manage Students') }}
@@ -45,6 +40,11 @@
                 @can(['view.trainers'])
                     <flux:navlist.item icon="user-group" :href="route('admin.trainers')"
                         :current="request()->routeIs('admin.trainers')" wire:navigate>{{ __('Manage Trainers') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['view.equipment'])
+                    <flux:navlist.item icon="cog" :href="route('admin.equipment')"
+                        :current="request()->routeIs('admin.equipment')" wire:navigate>{{ __('Equipment') }}
                     </flux:navlist.item>
                 @endcan
             </flux:navlist.group>

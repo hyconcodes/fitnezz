@@ -44,15 +44,20 @@ Route::middleware(['auth'])->group(function () {
         Volt::route('/students', 'admin.students')
             ->middleware(['permission:view.students|create.students|edit.students|delete.students'])
             ->name('admin.students');
-            
+
         // Trainers management
         Volt::route('/trainers', 'admin.trainers')
             ->middleware(['permission:view.trainers|create.trainers|edit.trainers|delete.trainers'])
             ->name('admin.trainers');
-            
+
         // Admin dashboard
         Volt::route('/dashboard', 'admin.dashboard')
             ->name('admin.dashboard');
+        Volt::route('/view-student', 'admin.view-student')
+            ->name('admin.view-student');
+        Volt::route('/equipment-sys', 'admin.equipment')
+            ->middleware(['permission:view.equipment|create.equipment|edit.equipment|delete.equipment|maintain.equipment'])
+            ->name('admin.equipment');
     });
 });
 
