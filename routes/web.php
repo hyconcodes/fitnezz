@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -58,7 +59,16 @@ Route::middleware(['auth'])->group(function () {
         Volt::route('/equipment-sys', 'admin.equipment')
             ->middleware(['permission:view.equipment|create.equipment|edit.equipment|delete.equipment|maintain.equipment'])
             ->name('admin.equipment');
+        Volt::route('/billings-sys', 'admin.billings')
+            ->middleware(['permission:view.payment|edit.payment|delete.payment'])
+            ->name('admin.billing');
     });
+    Volt::route('/student/deposit-sys', 'students.deposit')
+        ->middleware(['permission:make.payment'])
+        ->name('student.deposit');
+
+         // Paystack Routes
+    Route::get('/paystack/callback', [PaymentController::class, 'handlePayment'])->name('paystack.callback');
 });
 
 require __DIR__ . '/auth.php';

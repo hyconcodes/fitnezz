@@ -14,46 +14,53 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         // Role management permissions
-        $rolePermissions = [
-            'view.roles',
-            'create.roles',
-            'edit.roles',
-            'delete.roles',
-            'assign.permissions',
-        ];
+        // $rolePermissions = [
+        //     'view.roles',
+        //     'create.roles',
+        //     'edit.roles',
+        //     'delete.roles',
+        //     'assign.permissions',
+        // ];
 
         // Student management permissions
-        $studentPermissions = [
-            'view.students',
-            'create.students',
-            'edit.students',
-            'delete.students',
-        ];
+        // $studentPermissions = [
+        //     'view.students',
+        //     'create.students',
+        //     'edit.students',
+        //     'delete.students',
+        // ];
 
         // Trainer management permissions
-        $trainerPermissions = [
-            'view.trainers',
-            'create.trainers',
-            'edit.trainers',
-            'delete.trainers',
-        ];
+        // $trainerPermissions = [
+        //     'view.trainers',
+        //     'create.trainers',
+        //     'edit.trainers',
+        //     'delete.trainers',
+        // ];
 
         // Equipment management permissions
-        $equipmentPermissions = [
-            'view.equipment',
-            'create.equipment',
-            'edit.equipment',
-            'delete.equipment',
-            'maintain.equipment',
-        ];
+        // $equipmentPermissions = [
+        //     'view.equipment',
+        //     'create.equipment',
+        //     'edit.equipment',
+        //     'delete.equipment',
+        //     'maintain.equipment',
+        // ];
 
         // Combine all permissions
-        $permissions = array_merge(
-            $studentPermissions,
-            $trainerPermissions,
-            $rolePermissions,
-            $equipmentPermissions
-        );
+        // $permissions = array_merge(
+        //     $studentPermissions,
+        //     $trainerPermissions,
+        //     $rolePermissions,
+        //     $equipmentPermissions
+        // );
+
+        $permissions = [
+            'make.payment',
+            'view.payment',
+            'edit.payment',
+            'delete.payment',
+        ];
         // Create permissions in the database
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);

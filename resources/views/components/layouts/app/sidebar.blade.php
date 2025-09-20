@@ -47,6 +47,16 @@
                         :current="request()->routeIs('admin.equipment')" wire:navigate>{{ __('Equipment') }}
                     </flux:navlist.item>
                 @endcan
+                @can(['make.payment'])
+                    <flux:navlist.item icon="currency-dollar" :href="route('student.deposit')"
+                        :current="request()->routeIs('student.deposit')" wire:navigate>{{ __('Membership') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['view.payment', 'edit.payment', 'delete.payment'])
+                    <flux:navlist.item icon="credit-card" :href="route('admin.billing')"
+                        :current="request()->routeIs('admin.billing')" wire:navigate>{{ __('Billings') }}
+                    </flux:navlist.item>
+                @endcan
             </flux:navlist.group>
         </flux:navlist>
 
