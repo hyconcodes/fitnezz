@@ -5,29 +5,10 @@ use App\Models\FitnessClass;
 use App\Models\ClassRegistration;
 use App\Models\Membership;
 use Carbon\Carbon;
-use Livewire\WithPagination;
 
 new class extends Component {
-    use WithPagination;
-
     public $search = '';
     public $activeTab = 'upcoming'; // upcoming | ongoing
-    public $perPage = 6;
-
-    public function mount()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingSearch()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingActiveTab()
-    {
-        $this->resetPage();
-    }
 
     public function getMembershipProperty()
     {
@@ -40,29 +21,31 @@ new class extends Component {
         return $membership && Carbon::parse($membership->end_date)->isFuture();
     }
 
-    // Upcoming classes: registered and scheduled in the future
+    // Upcoming classes: created by this trainer and scheduled in the future
     public function getUpcomingClassesProperty()
     {
-        return FitnessClass::with('trainer')
-            ->whereHas('registrations', fn($q) => $q->where('student_id', auth()->id()))
+        return FitnessClass::with('registrations.student')
+            ->where('trainer_id', auth()->id())
             ->where('schedule_time', '>', now())
             ->when($this->search, fn($q) => $q->where('title', 'like', "%{$this->search}%"))
             ->orderBy('schedule_time')
-            ->paginate($this->perPage, ['*'], 'upcomingPage');
+            ->limit(4)
+            ->get();
     }
 
-    // Ongoing classes: registered and happening now (within 1 hour window)
+    // Ongoing classes: created by this trainer and happening now (within 1 hour window)
     public function getOngoingClassesProperty()
     {
-        return FitnessClass::with('trainer')
-            ->whereHas('registrations', fn($q) => $q->where('student_id', auth()->id()))
+        return FitnessClass::with('registrations.student')
+            ->where('trainer_id', auth()->id())
             ->whereBetween('schedule_time', [now()->subHour(), now()->addHour()])
             ->when($this->search, fn($q) => $q->where('title', 'like', "%{$this->search}%"))
             ->orderBy('schedule_time')
-            ->paginate($this->perPage, ['*'], 'ongoingPage');
+            ->limit(4)
+            ->get();
     }
 
-    // Dynamic property to return the correct paginated list based on activeTab
+    // Dynamic property to return the correct list based on activeTab
     public function getClassesProperty()
     {
         return $this->activeTab === 'upcoming'
@@ -72,15 +55,18 @@ new class extends Component {
 
     public function getStatsProperty()
     {
-        $user = auth()->user();
+        $trainerId = auth()->id();
         return [
-            'totalClasses' => ClassRegistration::where('student_id', $user->id)->count(),
-            'completedClasses' => ClassRegistration::where('student_id', $user->id)
-                ->whereHas('fitnessClass', fn($q) => $q->where('schedule_time', '<', now()))
+            'totalClasses' => FitnessClass::where('trainer_id', $trainerId)->count(),
+            'completedClasses' => FitnessClass::where('trainer_id', $trainerId)
+                ->where('schedule_time', '<', now())
                 ->count(),
-            'upcomingClasses' => ClassRegistration::where('student_id', $user->id)
-                ->whereHas('fitnessClass', fn($q) => $q->where('schedule_time', '>', now()))
+            'upcomingClasses' => FitnessClass::where('trainer_id', $trainerId)
+                ->where('schedule_time', '>', now())
                 ->count(),
+            'totalStudents' => ClassRegistration::whereHas('fitnessClass', fn($q) => $q->where('trainer_id', $trainerId))
+                ->distinct('student_id')
+                ->count('student_id'),
         ];
     }
 }; ?>
@@ -93,11 +79,11 @@ new class extends Component {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            Student Dashboard
+            Trainer Dashboard
         </h1>
-        <a href="{{ route('student.classes') }}"
+        <a href="{{ route('trainer.classes') }}"
            class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-            Browse Classes
+            Create Class
         </a>
     </div>
 
@@ -123,29 +109,6 @@ new class extends Component {
 
     <!-- Stats Row -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <!-- Membership Status Card -->
-        <div class="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Membership</p>
-                    <p class="text-lg font-semibold text-gray-800 dark:text-white">
-                        {{ $this->isMembershipActive() ? 'Active' : 'Inactive' }}
-                    </p>
-                </div>
-                <div class="p-3 rounded-full {{ $this->isMembershipActive() ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-            </div>
-            @if ($this->membership)
-                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Until {{ Carbon::parse($this->membership->end_date)->format('M d, Y') }}
-                </p>
-            @endif
-        </div>
-
         <!-- Total Classes -->
         <div class="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
             <div class="flex items-center justify-between">
@@ -193,6 +156,22 @@ new class extends Component {
                 </div>
             </div>
         </div>
+
+        <!-- Total Students -->
+        <div class="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Students</p>
+                    <p class="text-lg font-semibold text-gray-800 dark:text-white">{{ $this->stats['totalStudents'] }}</p>
+                </div>
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- My Classes Section -->
@@ -217,20 +196,25 @@ new class extends Component {
             </div>
         </div>
 
-        <!-- Classes Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Classes Horizontal List -->
+        <div class="space-y-3">
             @forelse ($this->classes as $class)
-                <div class="p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 hover:shadow transition-shadow">
-                    <div class="flex items-start justify-between mb-2">
-                        <h3 class="font-semibold text-gray-800 dark:text-white">{{ $class->title }}</h3>
-                        <span class="px-2 py-1 text-xs rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-100">
-                            {{ $activeTab === 'upcoming' ? 'Upcoming' : 'Ongoing' }}
-                        </span>
+                <div class="p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 hover:shadow transition-shadow flex items-center justify-between gap-4">
+                    <!-- Left: Title & Description -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="font-semibold text-gray-800 dark:text-white truncate">{{ $class->title }}</h3>
+                            <span class="px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-100">
+                                {{ $activeTab === 'upcoming' ? 'Upcoming' : 'Ongoing' }}
+                            </span>
+                        </div>
+                        {{-- <p class="text-sm text-gray-600 dark:text-gray-300 truncate">
+                            {{ $class->description ?? 'No description' }}
+                        </p> --}}
                     </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                        {{ $class->description ?? 'No description' }}
-                    </p>
-                    <div class="space-y-1 text-sm text-gray-500 dark:text-gray-400">
+
+                    <!-- Middle: Schedule & Registrations -->
+                    <div class="hidden md:flex md:flex-col md:items-start md:gap-1 text-sm text-gray-500 dark:text-gray-400">
                         <div class="flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -241,31 +225,29 @@ new class extends Component {
                         <div class="flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            Trainer: {{ $class->trainer->name ?? 'N/A' }}
+                            Registrations: {{ $class->registrations->count() }}
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center justify-between">
-                        <a href="{{ route('student.classes') }}"
-                           class="text-sm text-emerald-600 dark:text-emerald-400 hover:underline">
-                            View Details
-                        </a>
-                        <a href="{{ route('student.progress', $class->id) }}"
+
+                    <!-- Right: Action Button -->
+                    <div>
+                        <a href="{{ route('trainer.classes.participants', $class->id) }}"
                            class="px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                            Track Progress
+                            Check Participants
                         </a>
                     </div>
                 </div>
             @empty
-                <div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
+                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
                     <svg class="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                     <p class="text-sm">
                         @if ($activeTab === 'upcoming')
-                            No upcoming classes found. Register for a class to see it here!
+                            No upcoming classes found. Create a class to see it here!
                         @else
                             No ongoing classes right now.
                         @endif
@@ -275,8 +257,8 @@ new class extends Component {
         </div>
 
         <!-- Pagination -->
-        <div class="mt-4">
+        {{-- <div class="mt-4">
             {{ $this->classes->links() }}
-        </div>
+        </div> --}}
     </div>
 </div>

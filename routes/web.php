@@ -34,10 +34,15 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Trainer routes
-    Route::middleware(['role:trainer'])->group(function () {
         Volt::route('/trainer-dashboard', 'trainers.dashboard')
+        ->middleware(['role:trainer'])
             ->name('trainer.dashboard');
-    });
+        Volt::route('/trainer-classes', 'trainers.classes')
+        ->middleware(['permission:view.class|create.class|edit.class|delete.class'])
+            ->name('trainer.classes');
+        Volt::route('/trainer/classes/{classID}/participant', 'trainers.participants')
+        ->middleware(['permission:view.class|create.class|edit.class|delete.class'])
+            ->name('trainer.classes.participants');
 
     // Admin routes
     Route::prefix('admin')->group(function () {
@@ -52,9 +57,9 @@ Route::middleware(['auth'])->group(function () {
             ->name('admin.trainers');
 
         // Admin dashboard
-        Volt::route('/dashboard', 'admin.dashboard')
-            ->name('admin.dashboard');
-        Volt::route('/view-student', 'admin.view-student')
+        // Volt::route('/dashboard', 'admin.dashboard')
+        //     ->name('admin.dashboard'); // -------------------------> NIU
+        Volt::route('/view-student/{student}/profile', 'admin.view-student')
             ->name('admin.view-student');
         Volt::route('/equipment-sys', 'admin.equipment')
             ->middleware(['permission:view.equipment|create.equipment|edit.equipment|delete.equipment|maintain.equipment'])
@@ -66,6 +71,12 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('/student/deposit-sys', 'students.deposit')
         ->middleware(['permission:make.payment'])
         ->name('student.deposit');
+    Volt::route('/student/classes', 'students.classes')
+        ->middleware(['permission:register.class'])
+        ->name('student.classes');
+    Volt::route('/student/classes/{classID}/progress', 'students.progress')
+        ->middleware(['permission:register.class'])
+        ->name('student.progress');
 
          // Paystack Routes
     Route::get('/paystack/callback', [PaymentController::class, 'handlePayment'])->name('paystack.callback');

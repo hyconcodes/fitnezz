@@ -57,6 +57,16 @@
                         :current="request()->routeIs('admin.billing')" wire:navigate>{{ __('Billings') }}
                     </flux:navlist.item>
                 @endcan
+                @can(['view.class', 'edit.class', 'delete.class', 'create.class'])
+                    <flux:navlist.item icon="chat-bubble-oval-left-ellipsis" :href="route('trainer.classes')"
+                        :current="request()->routeIs('trainer.classes')" wire:navigate>{{ __('Classes') }}
+                    </flux:navlist.item>
+                @endcan
+                @can(['register.class'])
+                    <flux:navlist.item icon="rectangle-group" :href="route('student.classes')"
+                        :current="request()->routeIs('student.classes')" wire:navigate>{{ __('Classes') }}
+                    </flux:navlist.item>
+                @endcan
             </flux:navlist.group>
         </flux:navlist>
 
